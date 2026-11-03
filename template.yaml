@@ -1,6 +1,23 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: A two-page Python website with API Gateway and Lambda.
 
+Parameters:
+  CodeBucketName:
+    Type: String
+    Description: Name of the S3 bucket containing your ZIP (same Region as this stack).
+    MinLength: 3
+    MaxLength: 63
+    AllowedPattern: '^[a-z0-9][a-z0-9.-]+[a-z0-9]$'
+    ConstraintDescription: Enter the bucket name only, without s3:// or a file path.
+  CodeObjectKey:
+    Type: String
+    Description: S3 object key of the ZIP. Use a new name for each code update.
+    Default: function.zip
+    MinLength: 1
+    MaxLength: 1024
+    AllowedPattern: '^.+\.zip$'
+    ConstraintDescription: Enter the ZIP object key, such as function.zip or function-v2.zip.
+
 Resources:
   # Pythonの実行ログ。スタック削除時には、このログも削除されます。
   WebsiteLogs:
@@ -40,8 +57,10 @@ Resources:
       Timeout: 5
       LoggingConfig:
         LogGroup: !Ref WebsiteLogs
-      # READMEの手順でZIPを作り、cloudformation packageでS3の場所に変換します。
-      Code: .build/function.zip
+      # コンソールでS3にアップロードしたZIPの場所を、パラメーターで指定します。
+      Code:
+        S3Bucket: !Ref CodeBucketName
+        S3Key: !Ref CodeObjectKey
 
   WebsiteApi:
     Type: AWS::ApiGatewayV2::Api
