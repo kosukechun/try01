@@ -56,13 +56,13 @@ footer { border-top: 1px solid #deded7; color: #59616a; font-size: .8rem; }
 HOME = """
 <p class="eyebrow">MY FIRST CLOUD / 01</p>
 <h1>hello<span>AWS</span></h1>
-<p class="intro">小さなページから、クラウドへの第一歩。<br>
+<p class="intro"> <br>
 Pythonでつくったサイトを、AWSの上で動かしてみよう。</p>
 <section class="panel" aria-label="あいさつを試す">
   <form id="greeting-form">
     <label for="name">あなたの名前で、hello。</label>
     <div class="controls">
-      <input id="name" name="name" placeholder="例：たろう" maxlength="30" autocomplete="given-name">
+      <input id="name" name="name" placeholder="例：じろう" maxlength="30" autocomplete="given-name">
       <button type="submit">あいさつする →</button>
     </div>
   </form>
