@@ -91,8 +91,10 @@ CloudFormationは、この仕組みをYAMLからまとめて作ります。</p>
   <article><small>03 / PYTHON</small><h3>Lambda</h3>
     <p>main.pyを実行し、HTMLを返します。API Gatewayを通ってブラウザーに届きます。</p></article>
 </div>
-<section class="panel" aria-labelledby="quiz-title">
-  <h3 id="quiz-title">ミニクイズ：Pythonを実行するのは？</h3>
+<section class="panel" data-quiz aria-labelledby="quiz-title"
+  data-explanation="LambdaがPythonを実行して、ページを返します。"
+  data-hint="API Gatewayは入口、CloudFormationは構成を作る係です。">
+  <h3 id="quiz-title">ミニクイズ 1 / 5：Pythonを実行するのは？</h3>
   <div class="controls">
     <button type="button" data-answer="wrong">API Gateway</button>
     <button type="button" data-answer="correct">Lambda</button>
@@ -100,13 +102,60 @@ CloudFormationは、この仕組みをYAMLからまとめて作ります。</p>
   </div>
   <p id="answer" class="result" role="status">答えを選んでみよう。</p>
 </section>
+<section class="panel" data-quiz aria-labelledby="quiz-title-2"
+  data-explanation="S3はファイルを保管するサービス。このサイトではPythonのZIPを置きます。"
+  data-hint="ZIPなどのファイルを保管するサービスを選んでみよう。">
+  <h3 id="quiz-title-2">ミニクイズ 2 / 5：PythonのZIPを保管するのは？</h3>
+  <div class="controls">
+    <button type="button" data-answer="correct">S3</button>
+    <button type="button" data-answer="wrong">CloudWatch Logs</button>
+    <button type="button" data-answer="wrong">API Gateway</button>
+  </div>
+  <p class="result" role="status">答えを選んでみよう。</p>
+</section>
+<section class="panel" data-quiz aria-labelledby="quiz-title-3"
+  data-explanation="API GatewayがHTTPSの入口になり、リクエストをLambdaへ渡します。"
+  data-hint="ブラウザーから届くリクエストの入口を選んでみよう。">
+  <h3 id="quiz-title-3">ミニクイズ 3 / 5：ブラウザーからのアクセスを受け付ける入口は？</h3>
+  <div class="controls">
+    <button type="button" data-answer="wrong">S3</button>
+    <button type="button" data-answer="wrong">CloudFormation</button>
+    <button type="button" data-answer="correct">API Gateway</button>
+  </div>
+  <p class="result" role="status">答えを選んでみよう。</p>
+</section>
+<section class="panel" data-quiz aria-labelledby="quiz-title-4"
+  data-explanation="CloudFormationは、YAMLに書いたAWSリソースをスタックとしてまとめて作ります。"
+  data-hint="template.yamlをアップロードして使うサービスを思い出してみよう。">
+  <h3 id="quiz-title-4">ミニクイズ 4 / 5：YAMLからAWSの構成をまとめて作るのは？</h3>
+  <div class="controls">
+    <button type="button" data-answer="wrong">Lambda</button>
+    <button type="button" data-answer="correct">CloudFormation</button>
+    <button type="button" data-answer="wrong">S3</button>
+  </div>
+  <p class="result" role="status">答えを選んでみよう。</p>
+</section>
+<section class="panel" data-quiz aria-labelledby="quiz-title-5"
+  data-explanation="CloudWatch LogsでLambdaの実行ログを確認し、エラーの原因を調べられます。"
+  data-hint="Pythonのエラーメッセージなど、実行ログを保存するサービスを選んでみよう。">
+  <h3 id="quiz-title-5">ミニクイズ 5 / 5：Pythonの実行エラーをログで調べるのは？</h3>
+  <div class="controls">
+    <button type="button" data-answer="wrong">API Gateway</button>
+    <button type="button" data-answer="wrong">S3</button>
+    <button type="button" data-answer="correct">CloudWatch Logs</button>
+  </div>
+  <p class="result" role="status">答えを選んでみよう。</p>
+</section>
 <a href="/">← helloAWSに戻る</a>
 <script>
-document.querySelectorAll('[data-answer]').forEach((button) => {
-  button.addEventListener('click', () => {
-    document.getElementById('answer').textContent = button.dataset.answer === 'correct'
-      ? '正解！ LambdaがPythonを実行して、ページを返します。'
-      : 'もう一度！ API Gatewayは入口、CloudFormationは構成を作る係です。';
+// 問題ごとに処理することで、押した問題の答えだけを更新します。
+document.querySelectorAll('[data-quiz]').forEach((quiz) => {
+  quiz.querySelectorAll('[data-answer]').forEach((button) => {
+    button.addEventListener('click', () => {
+      quiz.querySelector('.result').textContent = button.dataset.answer === 'correct'
+        ? `正解！ ${quiz.dataset.explanation}`
+        : `もう一度！ ${quiz.dataset.hint}`;
+    });
   });
 });
 </script>
