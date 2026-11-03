@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: A two-page Python website with API Gateway and Lambda.
+
+Resources:
+  # Pythonの実行ログ。スタック削除時には、このログも削除されます。
+  WebsiteLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 7
+
+  # Lambdaに「このログへ書き込む」権限だけを渡します。
+  WebsiteRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: WriteWebsiteLogs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt WebsiteLogs.Arn
+
+  WebsiteFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.13
+      Handler: main.lambda_handler
+      Role: !GetAtt WebsiteRole.Arn
+      MemorySize: 128
+      Timeout: 5
+      LoggingConfig:
+        LogGroup: !Ref WebsiteLogs
+      # READMEの手順でZIPを作り、cloudformation packageでS3の場所に変換します。
+      Code: .build/function.zip
+
+  WebsiteApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub '${AWS::StackName}-http-api'
+      ProtocolType: HTTP
+
+  WebsiteIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebsiteApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt WebsiteFunction.Arn
+      PayloadFormatVersion: '2.0'
+
+  # すべてのパスをPythonに渡し、main.py側でページを選びます。
+  WebsiteRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebsiteApi
+      RouteKey: $default
+      Target: !Sub 'integrations/${WebsiteIntegration}'
+
+  WebsiteStage:
+    Type: AWS::ApiGatewayV2::Stage
+    DependsOn: WebsiteRoute
+    Properties:
+      ApiId: !Ref WebsiteApi
+      StageName: $default
+      AutoDeploy: true
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 10
+        ThrottlingRateLimit: 5
+
+  # このAPIからだけ、Lambdaを呼び出せるようにします。
+  WebsiteInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref WebsiteFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${WebsiteApi}/*'
+
+Outputs:
+  WebsiteUrl:
+    Description: Open this URL in your browser.
+    Value: !GetAtt WebsiteApi.ApiEndpoint
+  LogGroupName:
+    Description: CloudWatch log group for troubleshooting.
+    Value: !Ref WebsiteLogs
